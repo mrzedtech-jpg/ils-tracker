@@ -1,5 +1,5 @@
-import type { ILSTask, Announcement, AnnouncementCategory, RoleArea } from './types';
-import { ROLE_AREAS, CAMPUS_VISIBLE_ROLES, ANNOUNCEMENT_CATEGORY_ORDER } from './constants';
+import type { ILSTask, OpenBrainThought, Announcement, AnnouncementCategory, RoleArea } from './types';
+import { ROLE_AREAS, CAMPUS_VISIBLE_ROLES } from './constants';
 import { getEffectiveDueDate, todayStr, isDueThisWeek, getDayOfWeekName, prioritySortOrder } from './dateUtils';
 
 const CATEGORY_PRIORITY: Record<AnnouncementCategory, number> = {
@@ -7,7 +7,8 @@ const CATEGORY_PRIORITY: Record<AnnouncementCategory, number> = {
   happening_today: 1,
   recurring_today: 2,
   tagged_announcement: 3,
-  advance_notice: 4,
+  open_brain: 4,
+  advance_notice: 5,
 };
 
 function isActive(task: ILSTask): boolean {
@@ -30,7 +31,7 @@ function truncate(text: string, max: number): string {
   return text.slice(0, max).trimEnd() + '...';
 }
 
-export function generateAnnouncements(tasks: ILSTask[]): Announcement[] {
+export function generateAnnouncements(tasks: ILSTask[], thoughts: OpenBrainThought[] = []): Announcement[] {
   const today = todayStr();
   const seen = new Set<string>();
   const results: Announcement[] = [];
@@ -47,6 +48,7 @@ export function generateAnnouncements(tasks: ILSTask[]): Announcement[] {
       category,
       text,
       sourceTaskId: task.id,
+      sourceThoughtId: null,
       roleArea: task.role_area,
       priority: task.priority,
     });
@@ -114,6 +116,45 @@ export function generateAnnouncements(tasks: ILSTask[]): Announcement[] {
 
     const dayName = getDayOfWeekName(dueDate);
     addAnnouncement(task, 'advance_notice', `Coming up ${dayName}: ${task.title}${formatContext(task)}.`);
+  }
+
+  // 6. Open Brain thoughts — school-related tasks/reminders from the thoughts database
+  for (const thought of thoughts) {
+    const meta = thought.metadata;
+    if (!meta) continue;
+
+    // Extract the first sentence or up to 120 chars as announcement text
+    const content = thought.content;
+    const firstSentence = content.split(/[.!?]\s/)[0];
+    const text = truncate(firstSentence, 120);
+
+    // Check for action items — those make better announcements
+    const hasActions = meta.action_items && meta.action_items.length > 0;
+    const isTask = meta.type === 'task';
+
+    // Check if thought mentions today or has relevant dates
+    const mentionsToday = meta.dates_mentioned?.includes(today);
+    const hasRelevantTopics = meta.topics?.some((t: string) =>
+      ['announcement', 'campus duty', 'attendance', 'book fair', 'school event', 'library', 'assembly'].some(
+        (keyword) => t.toLowerCase().includes(keyword)
+      )
+    );
+
+    if (isTask || hasActions || mentionsToday || hasRelevantTopics) {
+      const seenKey = `thought-${thought.id}`;
+      if (!seen.has(seenKey)) {
+        seen.add(seenKey);
+        results.push({
+          id: `${thought.id}-open_brain`,
+          category: 'open_brain',
+          text: `${text}.`,
+          sourceTaskId: null,
+          sourceThoughtId: thought.id,
+          roleArea: null,
+          priority: mentionsToday ? 'high' : 'normal',
+        });
+      }
+    }
   }
 
   // Sort by category priority, then by task priority within each category

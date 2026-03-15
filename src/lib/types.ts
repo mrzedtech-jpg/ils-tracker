@@ -96,19 +96,35 @@ export interface TaskFormData {
   tags: string;
 }
 
+export interface OpenBrainThought {
+  id: string;
+  content: string;
+  metadata: {
+    type: string;
+    topics: string[];
+    people?: string[];
+    action_items?: string[];
+    dates_mentioned?: string[];
+    source?: string;
+  };
+  created_at: string;
+}
+
 export type AnnouncementCategory =
   | 'urgent_notice'
   | 'happening_today'
   | 'recurring_today'
   | 'advance_notice'
-  | 'tagged_announcement';
+  | 'tagged_announcement'
+  | 'open_brain';
 
 export interface Announcement {
   id: string;
   category: AnnouncementCategory;
   text: string;
-  sourceTaskId: string;
-  roleArea: RoleArea;
+  sourceTaskId: string | null;
+  sourceThoughtId: string | null;
+  roleArea: RoleArea | null;
   priority: Priority;
 }
 

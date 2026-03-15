@@ -1,10 +1,11 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import { Megaphone, ChevronDown, ChevronUp, Copy, Check } from 'lucide-react';
+import { Megaphone, ChevronDown, ChevronUp, Copy, Check, Brain } from 'lucide-react';
 import type { ILSTask } from '@/lib/types';
 import { ROLE_AREAS, ANNOUNCEMENT_CATEGORY_LABELS } from '@/lib/constants';
 import { generateAnnouncements, formatAnnouncementScript } from '@/lib/announcementUtils';
+import { useOpenBrainThoughts } from '@/hooks/useOpenBrainThoughts';
 
 interface AnnouncementsBannerProps {
   tasks: ILSTask[];
@@ -22,7 +23,8 @@ export default function AnnouncementsBanner({ tasks, onTaskClick, onCopySuccess 
   const [dismissedIds, setDismissedIds] = useState<Set<string>>(new Set());
   const [copied, setCopied] = useState(false);
 
-  const announcements = useMemo(() => generateAnnouncements(tasks), [tasks]);
+  const thoughts = useOpenBrainThoughts();
+  const announcements = useMemo(() => generateAnnouncements(tasks, thoughts), [tasks, thoughts]);
 
   const undismissedCount = announcements.filter((a) => !dismissedIds.has(a.id)).length;
 
@@ -50,6 +52,13 @@ export default function AnnouncementsBanner({ tasks, onTaskClick, onCopySuccess 
     } catch {
       // Clipboard API not available
     }
+  };
+
+  const handleAnnouncementClick = (announcement: typeof announcements[0]) => {
+    if (announcement.sourceTaskId) {
+      onTaskClick(announcement.sourceTaskId);
+    }
+    // Thoughts don't have a detail modal — clicking is a no-op for now
   };
 
   // Group announcements by category for display
@@ -94,19 +103,21 @@ export default function AnnouncementsBanner({ tasks, onTaskClick, onCopySuccess 
         <div className="px-4 pb-3 pt-1 space-y-0.5">
           {announcements.map((announcement) => {
             const isDismissed = dismissedIds.has(announcement.id);
-            const roleColor = ROLE_AREAS[announcement.roleArea].color;
+            const roleColor = announcement.roleArea ? ROLE_AREAS[announcement.roleArea].color : '#6366F1';
+            const isFromBrain = announcement.category === 'open_brain';
             const showCategory = announcement.category !== lastCategory;
             lastCategory = announcement.category;
 
             return (
               <div key={announcement.id}>
                 {showCategory && (
-                  <p className="text-[10px] font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500 mt-2 mb-0.5 px-3">
+                  <p className="text-[10px] font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500 mt-2 mb-0.5 px-3 flex items-center gap-1">
+                    {isFromBrain && <Brain size={10} />}
                     {ANNOUNCEMENT_CATEGORY_LABELS[announcement.category]}
                   </p>
                 )}
                 <div
-                  onClick={() => onTaskClick(announcement.sourceTaskId)}
+                  onClick={() => handleAnnouncementClick(announcement)}
                   className={`w-full text-left px-3 py-2 rounded-lg text-sm hover:bg-indigo-50/50 dark:hover:bg-indigo-950/50 transition-colors flex items-center gap-2.5 group cursor-pointer ${
                     isDismissed ? 'opacity-50' : ''
                   }`}
@@ -123,11 +134,15 @@ export default function AnnouncementsBanner({ tasks, onTaskClick, onCopySuccess 
                     {isDismissed && <Check size={10} />}
                   </button>
 
-                  {/* Role color dot */}
-                  <span
-                    className="w-2 h-2 rounded-full shrink-0"
-                    style={{ backgroundColor: roleColor }}
-                  />
+                  {/* Role color dot or brain icon */}
+                  {isFromBrain ? (
+                    <Brain size={12} className="shrink-0 text-indigo-500" />
+                  ) : (
+                    <span
+                      className="w-2 h-2 rounded-full shrink-0"
+                      style={{ backgroundColor: roleColor }}
+                    />
+                  )}
 
                   {/* Announcement text */}
                   <span

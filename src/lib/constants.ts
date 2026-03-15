@@ -283,6 +283,7 @@ export const ANNOUNCEMENT_CATEGORY_ORDER: AnnouncementCategory[] = [
   'happening_today',
   'recurring_today',
   'tagged_announcement',
+  'open_brain',
   'advance_notice',
 ];
 
@@ -292,6 +293,7 @@ export const ANNOUNCEMENT_CATEGORY_LABELS: Record<AnnouncementCategory, string> 
   recurring_today: 'Scheduled',
   advance_notice: 'Coming Up',
   tagged_announcement: 'Announcement',
+  open_brain: 'From Open Brain',
 };
 
 export const ROLE_AREA_ORDER: RoleArea[] = [
