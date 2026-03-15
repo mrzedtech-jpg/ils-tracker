@@ -6,6 +6,7 @@ import { useDarkMode } from '@/hooks/useDarkMode';
 import type { ViewType, ILSTask } from '@/lib/types';
 import Header from '@/components/Header';
 import AlertBanner from '@/components/AlertBanner';
+import AnnouncementsBanner from '@/components/AnnouncementsBanner';
 import ViewSwitcher from '@/components/ViewSwitcher';
 import BottomTabBar from '@/components/BottomTabBar';
 import MyWeekView from '@/components/MyWeekView';
@@ -97,6 +98,12 @@ export default function Home() {
       />
 
       <AlertBanner tasks={tasks} onTaskClick={handleTaskSelect} />
+
+      <AnnouncementsBanner
+        tasks={tasks}
+        onTaskClick={handleTaskSelect}
+        onCopySuccess={() => setToastMessage('Announcements copied to clipboard!')}
+      />
 
       <ViewSwitcher activeView={activeView} onViewChange={setActiveView} />
 

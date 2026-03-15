@@ -13,7 +13,7 @@ import {
   Pin,
   type LucideIcon,
 } from 'lucide-react';
-import type { RoleArea, TaskStatus, Priority, TaskType } from './types';
+import type { RoleArea, TaskStatus, Priority, TaskType, AnnouncementCategory } from './types';
 
 export interface RoleAreaConfig {
   label: string;
@@ -265,6 +265,34 @@ export const TASK_TYPES: Record<TaskType, string> = {
 };
 
 export const CURRENT_SCHOOL_YEAR = '2025-2026';
+
+export const SCHOOL_NAME = 'Wildcats';
+
+export const CAMPUS_VISIBLE_ROLES: RoleArea[] = [
+  'library',
+  'tech_lessons',
+  'gt_instruction',
+  'it_support',
+  'observations',
+  'campus_duties',
+  'conferences',
+];
+
+export const ANNOUNCEMENT_CATEGORY_ORDER: AnnouncementCategory[] = [
+  'urgent_notice',
+  'happening_today',
+  'recurring_today',
+  'tagged_announcement',
+  'advance_notice',
+];
+
+export const ANNOUNCEMENT_CATEGORY_LABELS: Record<AnnouncementCategory, string> = {
+  urgent_notice: 'Urgent',
+  happening_today: 'Today',
+  recurring_today: 'Scheduled',
+  advance_notice: 'Coming Up',
+  tagged_announcement: 'Announcement',
+};
 
 export const ROLE_AREA_ORDER: RoleArea[] = [
   'library',

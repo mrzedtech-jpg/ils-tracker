@@ -96,6 +96,22 @@ export interface TaskFormData {
   tags: string;
 }
 
+export type AnnouncementCategory =
+  | 'urgent_notice'
+  | 'happening_today'
+  | 'recurring_today'
+  | 'advance_notice'
+  | 'tagged_announcement';
+
+export interface Announcement {
+  id: string;
+  category: AnnouncementCategory;
+  text: string;
+  sourceTaskId: string;
+  roleArea: RoleArea;
+  priority: Priority;
+}
+
 export const EMPTY_TASK_FORM: TaskFormData = {
   title: '',
   description: '',

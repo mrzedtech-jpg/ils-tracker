@@ -4,9 +4,13 @@ function toLocalDate(dateStr: string): Date {
   return new Date(dateStr + 'T00:00:00');
 }
 
-function todayStr(): string {
+export function todayStr(): string {
   const now = new Date();
   return now.toISOString().split('T')[0];
+}
+
+export function getDayOfWeekName(dateStr: string): string {
+  return toLocalDate(dateStr).toLocaleDateString('en-US', { weekday: 'long' });
 }
 
 function today(): Date {
